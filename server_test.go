@@ -75,6 +75,51 @@ func TestStatusAPI(t *testing.T) {
 	}
 }
 
+func TestHealthAPI_PostMethod(t *testing.T) {
+	req := httptest.NewRequest(http.MethodPost, "/api/health", nil)
+	w := httptest.NewRecorder()
+
+	handleHealthAPI(w, req)
+
+	resp := w.Result()
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("expected 200 OK for POST, got %d", resp.StatusCode)
+	}
+
+	var body map[string]string
+	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
+		t.Fatalf("failed to decode JSON response: %v", err)
+	}
+	if body["status"] != "healthy" {
+		t.Fatalf("expected status 'healthy', got '%s'", body["status"])
+	}
+}
+
+func TestStatusAPI_JSONFields(t *testing.T) {
+	mu.Lock()
+	serverStatus = Status{
+		Status:    "running",
+		Port:      8080,
+		StartTime: time.Now(),
+	}
+	mu.Unlock()
+
+	w := httptest.NewRecorder()
+	handleStatusAPI(w, httptest.NewRequest(http.MethodGet, "/api/status", nil))
+
+	var raw map[string]interface{}
+	if err := json.NewDecoder(w.Result().Body).Decode(&raw); err != nil {
+		t.Fatalf("failed to decode JSON: %v", err)
+	}
+
+	expectedFields := []string{"status", "port", "uptime", "start_time"}
+	for _, field := range expectedFields {
+		if _, ok := raw[field]; !ok {
+			t.Fatalf("Status JSON missing field: %s", field)
+		}
+	}
+}
+
 func TestHomePage(t *testing.T) {
 	mu.Lock()
 	serverStatus = Status{

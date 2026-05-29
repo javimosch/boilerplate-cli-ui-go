@@ -133,6 +133,22 @@ func TestIsDaemonRunningCleansStalePID(t *testing.T) {
 	}
 }
 
+func TestStartDaemonAlreadyRunning(t *testing.T) {
+	os.Remove(pidFile)
+	myPID := os.Getpid()
+	if err := os.WriteFile(pidFile, []byte(fmt.Sprintf("%d", myPID)), 0644); err != nil {
+		t.Fatalf("failed to write PID file: %v", err)
+	}
+	defer os.Remove(pidFile)
+
+	output := captureStdout(func() {
+		startDaemon(8080)
+	})
+	if !strings.Contains(output, "already running") {
+		t.Fatalf("startDaemon should report 'already running', got: %s", output)
+	}
+}
+
 func TestReadPIDFile_TableDriven(t *testing.T) {
 	tests := []struct {
 		name    string
