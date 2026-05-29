@@ -8,6 +8,23 @@ import (
 	"testing"
 )
 
+func tempPIDFile(t *testing.T, content string) string {
+	t.Helper()
+	f, err := os.CreateTemp("", "boilerplate-pid-*.txt")
+	if err != nil {
+		t.Fatalf("failed to create temp PID file: %v", err)
+	}
+	f.Close()
+	if content != "" {
+		if err := os.WriteFile(f.Name(), []byte(content), 0644); err != nil {
+			os.Remove(f.Name())
+			t.Fatalf("failed to write temp PID file: %v", err)
+		}
+	}
+	t.Cleanup(func() { os.Remove(f.Name()) })
+	return f.Name()
+}
+
 func TestGetExecutablePath(t *testing.T) {
 	path, err := getExecutablePath()
 	if err != nil {
@@ -113,6 +130,39 @@ func TestIsDaemonRunningCleansStalePID(t *testing.T) {
 	}
 	if _, err := os.Stat(pidFile); !os.IsNotExist(err) {
 		t.Fatal("isDaemonRunning() should remove stale PID file")
+	}
+}
+
+func TestReadPIDFile_TableDriven(t *testing.T) {
+	tests := []struct {
+		name    string
+		content string
+		wantPID int
+		wantErr bool
+	}{
+		{"non-existent file", "", 0, true},
+		{"empty file", "", 0, true},
+		{"invalid string", "not-a-number", 0, true},
+		{"negative PID", "-1", 0, true},
+		{"zero PID", "0", 0, true},
+		{"valid PID", "12345", 12345, false},
+		{"PID with whitespace", "  67890  ", 67890, false},
+		{"PID with newline", "9999\n", 9999, false},
+		{"multiple numbers", "123 456", 123, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			path := tempPIDFile(t, tt.content)
+
+			got, err := readPIDFile(path)
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("readPIDFile() error = %v, wantErr = %v", err, tt.wantErr)
+			}
+			if got != tt.wantPID {
+				t.Fatalf("readPIDFile() = %d, want %d", got, tt.wantPID)
+			}
+		})
 	}
 }
 

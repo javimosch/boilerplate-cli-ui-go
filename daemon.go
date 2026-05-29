@@ -61,22 +61,29 @@ func startDaemon(port int) {
 	fmt.Printf("Logs: %s\n", logFile)
 }
 
-func stopDaemon() {
-	// Read PID file
-	pidData, err := os.ReadFile(pidFile)
+func readPIDFile(path string) (int, error) {
+	pidData, err := os.ReadFile(path)
 	if err != nil {
-		if os.IsNotExist(err) {
-			fmt.Println("Daemon is not running")
-			return
-		}
-		fmt.Fprintf(os.Stderr, "Error reading PID file: %v\n", err)
-		os.Exit(1)
+		return 0, fmt.Errorf("reading PID file: %w", err)
 	}
 
 	var pid int
 	n, _ := fmt.Sscanf(string(pidData), "%d", &pid)
 	if n != 1 || pid <= 0 {
-		fmt.Fprintf(os.Stderr, "Error: invalid PID in file %s\n", pidFile)
+		return 0, fmt.Errorf("invalid PID in file %s", path)
+	}
+
+	return pid, nil
+}
+
+func stopDaemon() {
+	pid, err := readPIDFile(pidFile)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			fmt.Println("Daemon is not running")
+			return
+		}
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Remove(pidFile)
 		os.Exit(1)
 	}
@@ -131,8 +138,8 @@ func stopDaemon() {
 
 func checkDaemonStatus() {
 	if isDaemonRunning() {
-		pidData, _ := os.ReadFile(pidFile)
-		fmt.Printf("Daemon is running (PID %s)\n", string(pidData))
+		pid, _ := readPIDFile(pidFile)
+		fmt.Printf("Daemon is running (PID %d)\n", pid)
 		fmt.Printf("Logs: %s\n", logFile)
 	} else {
 		fmt.Println("Daemon is not running")
@@ -140,21 +147,11 @@ func checkDaemonStatus() {
 }
 
 func isDaemonRunning() bool {
-	// Check if PID file exists
-	if _, err := os.Stat(pidFile); os.IsNotExist(err) {
-		return false
-	}
-
-	// Read PID file
-	pidData, err := os.ReadFile(pidFile)
+	pid, err := readPIDFile(pidFile)
 	if err != nil {
-		return false
-	}
-
-	var pid int
-	n, _ := fmt.Sscanf(string(pidData), "%d", &pid)
-	if n != 1 || pid <= 0 {
-		os.Remove(pidFile)
+		if !errors.Is(err, os.ErrNotExist) {
+			os.Remove(pidFile)
+		}
 		return false
 	}
 

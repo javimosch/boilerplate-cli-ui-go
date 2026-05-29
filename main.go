@@ -8,13 +8,13 @@ import (
 
 const Version = "1.0.0"
 
-func main() {
-	if len(os.Args) < 2 {
+func runCommand(args []string) int {
+	if len(args) < 1 {
 		printHelp()
-		os.Exit(1)
+		return 1
 	}
 
-	command := os.Args[1]
+	command := args[0]
 
 	switch command {
 	case "start":
@@ -30,8 +30,13 @@ func main() {
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		printHelp()
-		os.Exit(1)
+		return 1
 	}
+	return 0
+}
+
+func main() {
+	os.Exit(runCommand(os.Args[1:]))
 }
 
 func handleStart() {
