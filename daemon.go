@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"syscall"
+	"time"
 )
 
 const (
@@ -91,10 +92,25 @@ func stopDaemon() {
 		os.Exit(1)
 	}
 
-	// Remove PID file
-	os.Remove(pidFile)
+	// Wait for process to terminate (max 5 seconds)
+	timeout := time.After(5 * time.Second)
+	ticker := time.NewTicker(100 * time.Millisecond)
+	defer ticker.Stop()
 
-	fmt.Printf("Daemon stopped (PID %d)\n", pid)
+	for {
+		select {
+		case <-timeout:
+			process.Signal(syscall.SIGKILL)
+			time.Sleep(100 * time.Millisecond)
+		case <-ticker.C:
+			if err := process.Signal(syscall.Signal(0)); err != nil {
+				// Process has terminated
+				os.Remove(pidFile)
+				fmt.Printf("Daemon stopped (PID %d)\n", pid)
+				return
+			}
+		}
+	}
 }
 
 func checkDaemonStatus() {
