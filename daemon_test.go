@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -61,3 +62,14 @@ func TestIsDaemonRunningNegativePID(t *testing.T) {
 		t.Fatal("isDaemonRunning() should return false for negative PID")
 	}
 }
+
+func TestCheckDaemonStatusNotRunning(t *testing.T) {
+	os.Remove(pidFile)
+
+	output := captureStdout(checkDaemonStatus)
+	if !strings.Contains(output, "not running") {
+		t.Fatalf("checkDaemonStatus should report 'not running', got: %s", output)
+	}
+}
+
+
