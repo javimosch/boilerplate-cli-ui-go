@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -24,11 +25,13 @@ type Status struct {
 var serverStatus Status
 
 func startServer(port int) {
+	mu.Lock()
 	serverStatus = Status{
 		Status:    "running",
 		Port:      port,
 		StartTime: time.Now(),
 	}
+	mu.Unlock()
 
 	mux := http.NewServeMux()
 
@@ -51,6 +54,12 @@ func startServer(port int) {
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
+	mu.Lock()
+	currentPort := serverStatus.Port
+	mu.Unlock()
+
+	portStr := strconv.Itoa(currentPort)
+
 	html := `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -142,7 +151,7 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 </head>
 <body>
     <div class="container">
-        <h1>🚀 Boilerplate CLI UI</h1>
+        <h1>Boilerplate CLI UI</h1>
         <p class="subtitle">Go CLI with HTTP server and simple UI</p>
         
         <div class="status-card">
@@ -152,7 +161,7 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
             </div>
             <div class="status-item">
                 <span class="label">Port</span>
-                <span class="value">8080</span>
+                <span class="value">` + portStr + `</span>
             </div>
             <div class="status-item">
                 <span class="label">Version</span>

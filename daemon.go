@@ -20,8 +20,8 @@ func startDaemon(port int) {
 		return
 	}
 
-	// Get the current executable path
-	execPath, err := os.Executable()
+	// Get the current executable path (resolves symlinks)
+	execPath, err := getExecutablePath()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error getting executable path: %v\n", err)
 		os.Exit(1)
@@ -72,7 +72,12 @@ func stopDaemon() {
 	}
 
 	var pid int
-	fmt.Sscanf(string(pidData), "%d", &pid)
+	n, _ := fmt.Sscanf(string(pidData), "%d", &pid)
+	if n != 1 || pid <= 0 {
+		fmt.Fprintf(os.Stderr, "Error: invalid PID in file %s\n", pidFile)
+		os.Remove(pidFile)
+		os.Exit(1)
+	}
 
 	// Send SIGTERM to the process
 	process, err := os.FindProcess(pid)
@@ -115,7 +120,11 @@ func isDaemonRunning() bool {
 	}
 
 	var pid int
-	fmt.Sscanf(string(pidData), "%d", &pid)
+	n, _ := fmt.Sscanf(string(pidData), "%d", &pid)
+	if n != 1 || pid <= 0 {
+		os.Remove(pidFile)
+		return false
+	}
 
 	// Check if process is running
 	process, err := os.FindProcess(pid)
