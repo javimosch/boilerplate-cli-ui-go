@@ -165,7 +165,7 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
             </div>
             <div class="status-item">
                 <span class="label">Version</span>
-                <span class="value">1.0.0</span>
+                <span class="value">` + Version + `</span>
             </div>
         </div>
         

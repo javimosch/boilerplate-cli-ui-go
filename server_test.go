@@ -152,3 +152,21 @@ func TestHomePage(t *testing.T) {
 		t.Fatal("home page should contain the title")
 	}
 }
+
+func TestHomePage_ContainsVersion(t *testing.T) {
+	mu.Lock()
+	serverStatus = Status{
+		Status:    "running",
+		Port:      8080,
+		StartTime: time.Now(),
+	}
+	mu.Unlock()
+
+	w := httptest.NewRecorder()
+	handleHome(w, httptest.NewRequest(http.MethodGet, "/", nil))
+
+	body := w.Body.String()
+	if !strings.Contains(body, Version) {
+		t.Fatalf("home page should contain Version constant %q", Version)
+	}
+}
