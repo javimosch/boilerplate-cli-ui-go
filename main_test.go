@@ -27,6 +27,25 @@ func captureStdout(f func()) string {
 	return <-out
 }
 
+func captureStderr(f func()) string {
+	r, w, _ := os.Pipe()
+	old := os.Stderr
+	os.Stderr = w
+
+	out := make(chan string)
+	go func() {
+		var buf bytes.Buffer
+		io.Copy(&buf, r)
+		out <- buf.String()
+	}()
+
+	f()
+
+	w.Close()
+	os.Stderr = old
+	return <-out
+}
+
 func TestHandleVersion(t *testing.T) {
 	output := captureStdout(handleVersion)
 	if !strings.Contains(output, "boilerplate-cli-ui-go v1.0.0") {

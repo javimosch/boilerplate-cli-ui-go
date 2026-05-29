@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -69,6 +70,49 @@ func TestCheckDaemonStatusNotRunning(t *testing.T) {
 	output := captureStdout(checkDaemonStatus)
 	if !strings.Contains(output, "not running") {
 		t.Fatalf("checkDaemonStatus should report 'not running', got: %s", output)
+	}
+}
+
+func TestStopDaemonNoPIDFile(t *testing.T) {
+	os.Remove(pidFile)
+
+	output := captureStdout(stopDaemon)
+	if !strings.Contains(output, "not running") {
+		t.Fatalf("stopDaemon should report 'not running', got: %s", output)
+	}
+}
+
+func TestStopDaemonStalePID(t *testing.T) {
+	os.Remove(pidFile)
+	// Use a PID that is very unlikely to exist
+	stalePID := 999999999
+	if err := os.WriteFile(pidFile, []byte(fmt.Sprintf("%d", stalePID)), 0644); err != nil {
+		t.Fatalf("failed to write test PID file: %v", err)
+	}
+	defer os.Remove(pidFile)
+
+	output := captureStdout(stopDaemon)
+	if !strings.Contains(output, "Daemon stopped") {
+		t.Fatalf("stopDaemon should report 'Daemon stopped', got: %s", output)
+	}
+	if _, err := os.Stat(pidFile); !os.IsNotExist(err) {
+		t.Fatal("stopDaemon should remove stale PID file")
+	}
+}
+
+func TestIsDaemonRunningCleansStalePID(t *testing.T) {
+	os.Remove(pidFile)
+	stalePID := 999999999
+	if err := os.WriteFile(pidFile, []byte(fmt.Sprintf("%d", stalePID)), 0644); err != nil {
+		t.Fatalf("failed to write test PID file: %v", err)
+	}
+	defer os.Remove(pidFile)
+
+	if isDaemonRunning() {
+		t.Fatal("isDaemonRunning() should return false for stale PID")
+	}
+	if _, err := os.Stat(pidFile); !os.IsNotExist(err) {
+		t.Fatal("isDaemonRunning() should remove stale PID file")
 	}
 }
 

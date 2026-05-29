@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -84,24 +85,39 @@ func stopDaemon() {
 	process, err := os.FindProcess(pid)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error finding process: %v\n", err)
+		os.Remove(pidFile)
 		os.Exit(1)
 	}
 
 	if err := process.Signal(syscall.SIGTERM); err != nil {
+		if errors.Is(err, os.ErrProcessDone) || errors.Is(err, syscall.ESRCH) {
+			os.Remove(pidFile)
+			fmt.Printf("Daemon stopped (PID %d)\n", pid)
+			return
+		}
 		fmt.Fprintf(os.Stderr, "Error stopping process: %v\n", err)
+		os.Remove(pidFile)
 		os.Exit(1)
 	}
 
 	// Wait for process to terminate (max 5 seconds)
 	timeout := time.After(5 * time.Second)
+	forceTimeout := time.After(6 * time.Second)
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
+	forceKilled := false
 
 	for {
 		select {
 		case <-timeout:
-			process.Signal(syscall.SIGKILL)
-			time.Sleep(100 * time.Millisecond)
+			if !forceKilled {
+				process.Signal(syscall.SIGKILL)
+				forceKilled = true
+			}
+		case <-forceTimeout:
+			os.Remove(pidFile)
+			fmt.Fprintf(os.Stderr, "Warning: daemon PID %d did not stop, removing PID file\n", pid)
+			return
 		case <-ticker.C:
 			if err := process.Signal(syscall.Signal(0)); err != nil {
 				// Process has terminated
