@@ -91,6 +91,29 @@ func TestHandleVersionHuman(t *testing.T) {
 	}
 }
 
+func TestJSONEncodingRobustness(t *testing.T) {
+	// Test that JSON structures can be properly encoded (defensive test)
+	versionInfo := VersionInfo{
+		Name:    "test-app",
+		Version: "1.0.0",
+	}
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(versionInfo); err != nil {
+		t.Fatalf("VersionInfo should encode to JSON without error: %v", err)
+	}
+
+	// Verify it's valid JSON
+	var decoded VersionInfo
+	if err := json.Unmarshal(buf.Bytes(), &decoded); err != nil {
+		t.Fatalf("Encoded JSON should be valid: %v", err)
+	}
+
+	if decoded.Name != versionInfo.Name || decoded.Version != versionInfo.Version {
+		t.Fatal("Decoded JSON should match original")
+	}
+}
+
 func TestPrintHelp(t *testing.T) {
 	output := captureStdout(printHelp)
 	if !strings.Contains(output, "Usage:") {

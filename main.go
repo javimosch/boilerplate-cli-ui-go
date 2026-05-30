@@ -96,7 +96,10 @@ func handleVersion() {
 	if len(os.Args) > 2 && os.Args[2] == "--human" {
 		fmt.Printf("boilerplate-cli-ui-go v%s\n", Version)
 	} else {
-		json.NewEncoder(os.Stdout).Encode(versionInfo)
+		if err := json.NewEncoder(os.Stdout).Encode(versionInfo); err != nil {
+			fmt.Fprintf(os.Stderr, "Error encoding JSON: %v\n", err)
+			os.Exit(ExitSoftwareError)
+		}
 	}
 }
 

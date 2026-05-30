@@ -174,7 +174,10 @@ func checkDaemonStatus() int {
 			fmt.Println("Daemon is not running")
 		}
 	} else {
-		json.NewEncoder(os.Stdout).Encode(status)
+		if err := json.NewEncoder(os.Stdout).Encode(status); err != nil {
+			fmt.Fprintf(os.Stderr, "Error encoding JSON: %v\n", err)
+			return ExitSoftwareError
+		}
 	}
 
 	return ExitSuccess
