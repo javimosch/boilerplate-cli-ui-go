@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -84,9 +85,59 @@ func TestIsDaemonRunningNegativePID(t *testing.T) {
 func TestCheckDaemonStatusNotRunning(t *testing.T) {
 	os.Remove(pidFile)
 
+	// Test --human flag output
+	oldArgs := os.Args
+	defer func() { os.Args = oldArgs }()
+	os.Args = []string{"program", "status", "--human"}
+
 	output := captureStdout(func() { checkDaemonStatus() })
 	if !strings.Contains(output, "not running") {
-		t.Fatalf("checkDaemonStatus should report 'not running', got: %s", output)
+		t.Fatalf("checkDaemonStatus --human should report 'not running', got: %s", output)
+	}
+}
+
+func TestCheckDaemonStatusJSON(t *testing.T) {
+	// Test JSON output by default (agent-first design)
+	os.Remove(pidFile)
+
+	output := captureStdout(func() { checkDaemonStatus() })
+
+	var status DaemonStatus
+	if err := json.Unmarshal([]byte(output), &status); err != nil {
+		t.Fatalf("checkDaemonStatus should output valid JSON by default, got: %s", output)
+	}
+
+	if status.Running != false {
+		t.Fatal("expected Running to be false when daemon not running")
+	}
+	if status.PID != 0 {
+		t.Fatalf("expected PID to be 0 when daemon not running, got %d", status.PID)
+	}
+}
+
+func TestCheckDaemonStatusJSONRunning(t *testing.T) {
+	os.Remove(pidFile)
+	myPID := os.Getpid()
+	if err := os.WriteFile(pidFile, []byte(fmt.Sprintf("%d", myPID)), 0644); err != nil {
+		t.Fatalf("failed to write PID file: %v", err)
+	}
+	defer os.Remove(pidFile)
+
+	output := captureStdout(func() { checkDaemonStatus() })
+
+	var status DaemonStatus
+	if err := json.Unmarshal([]byte(output), &status); err != nil {
+		t.Fatalf("checkDaemonStatus should output valid JSON, got: %s", output)
+	}
+
+	if status.Running != true {
+		t.Fatal("expected Running to be true when daemon running")
+	}
+	if status.PID != myPID {
+		t.Fatalf("expected PID to be %d, got %d", myPID, status.PID)
+	}
+	if status.LogFile != logFile {
+		t.Fatalf("expected LogFile to be %s, got %s", logFile, status.LogFile)
 	}
 }
 

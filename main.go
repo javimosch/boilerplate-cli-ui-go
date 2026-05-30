@@ -1,12 +1,25 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
 )
 
 const Version = "1.0.0"
+
+// JSON output structures for agent-first design
+type VersionInfo struct {
+	Name    string `json:"name"`
+	Version string `json:"version"`
+}
+
+type DaemonStatus struct {
+	Running bool   `json:"running"`
+	PID     int    `json:"pid,omitempty"`
+	LogFile string `json:"log_file,omitempty"`
+}
 
 // Agent-first design semantic exit codes
 const (
@@ -74,7 +87,17 @@ func handleStatus() int {
 }
 
 func handleVersion() {
-	fmt.Printf("boilerplate-cli-ui-go v%s\n", Version)
+	versionInfo := VersionInfo{
+		Name:    "boilerplate-cli-ui-go",
+		Version: Version,
+	}
+
+	// Check for --human flag (agent-first design: JSON by default)
+	if len(os.Args) > 2 && os.Args[2] == "--human" {
+		fmt.Printf("boilerplate-cli-ui-go v%s\n", Version)
+	} else {
+		json.NewEncoder(os.Stdout).Encode(versionInfo)
+	}
 }
 
 func printHelp() {

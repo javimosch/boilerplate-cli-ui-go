@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -149,13 +150,33 @@ func stopDaemon() int {
 }
 
 func checkDaemonStatus() int {
+	var status DaemonStatus
+
 	if isDaemonRunning() {
 		pid, _ := readPIDFile(pidFile)
-		fmt.Printf("Daemon is running (PID %d)\n", pid)
-		fmt.Printf("Logs: %s\n", logFile)
+		status = DaemonStatus{
+			Running: true,
+			PID:     pid,
+			LogFile: logFile,
+		}
 	} else {
-		fmt.Println("Daemon is not running")
+		status = DaemonStatus{
+			Running: false,
+		}
 	}
+
+	// Check for --human flag (agent-first design: JSON by default)
+	if len(os.Args) > 2 && os.Args[2] == "--human" {
+		if status.Running {
+			fmt.Printf("Daemon is running (PID %d)\n", status.PID)
+			fmt.Printf("Logs: %s\n", status.LogFile)
+		} else {
+			fmt.Println("Daemon is not running")
+		}
+	} else {
+		json.NewEncoder(os.Stdout).Encode(status)
+	}
+
 	return ExitSuccess
 }
 

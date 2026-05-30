@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"os"
 	"os/exec"
@@ -48,9 +49,45 @@ func captureStderr(f func()) string {
 }
 
 func TestHandleVersion(t *testing.T) {
+	// Test that it outputs something (legacy test)
+	output := captureStdout(handleVersion)
+	if len(strings.TrimSpace(output)) == 0 {
+		t.Fatal("handleVersion should produce output")
+	}
+}
+
+func TestHandleVersionJSON(t *testing.T) {
+	// Test default JSON output (agent-first design)
+	output := captureStdout(handleVersion)
+
+	var versionInfo VersionInfo
+	if err := json.Unmarshal([]byte(output), &versionInfo); err != nil {
+		t.Fatalf("handleVersion should output valid JSON by default, got: %s", output)
+	}
+
+	if versionInfo.Name != "boilerplate-cli-ui-go" {
+		t.Fatalf("expected name 'boilerplate-cli-ui-go', got %s", versionInfo.Name)
+	}
+	if versionInfo.Version != Version {
+		t.Fatalf("expected version %s, got %s", Version, versionInfo.Version)
+	}
+}
+
+func TestHandleVersionHuman(t *testing.T) {
+	// Test --human flag output
+	oldArgs := os.Args
+	defer func() { os.Args = oldArgs }()
+	os.Args = []string{"program", "version", "--human"}
+
 	output := captureStdout(handleVersion)
 	if !strings.Contains(output, "boilerplate-cli-ui-go v1.0.0") {
-		t.Fatalf("handleVersion output should contain version, got: %s", output)
+		t.Fatalf("handleVersion --human should contain human-readable version, got: %s", output)
+	}
+
+	// Should not be valid JSON
+	var versionInfo VersionInfo
+	if json.Unmarshal([]byte(output), &versionInfo) == nil {
+		t.Fatal("handleVersion --human should not output JSON")
 	}
 }
 
@@ -76,7 +113,7 @@ func TestRunCommand_TableDriven(t *testing.T) {
 			name:     "version command",
 			args:     []string{"version"},
 			wantExit: 0,
-			wantOut:  "boilerplate-cli-ui-go v1.0.0",
+			wantOut:  `"version":"1.0.0"`,
 		},
 		{
 			name:     "help command",
