@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -68,9 +69,19 @@ func readPIDFile(path string) (int, error) {
 		return 0, fmt.Errorf("reading PID file: %w", err)
 	}
 
+	pidStr := strings.TrimSpace(string(pidData))
+	if pidStr == "" {
+		return 0, fmt.Errorf("invalid PID in file %s", path)
+	}
+
 	var pid int
-	n, _ := fmt.Sscanf(string(pidData), "%d", &pid)
-	if n != 1 || pid <= 0 {
+	n, err := fmt.Sscanf(pidStr, "%d", &pid)
+	if err != nil || n != 1 || pid <= 0 {
+		return 0, fmt.Errorf("invalid PID in file %s", path)
+	}
+
+	// Ensure the entire string was consumed (no extra characters)
+	if fmt.Sprintf("%d", pid) != pidStr {
 		return 0, fmt.Errorf("invalid PID in file %s", path)
 	}
 

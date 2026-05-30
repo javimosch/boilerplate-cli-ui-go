@@ -164,7 +164,7 @@ func TestReadPIDFile_TableDriven(t *testing.T) {
 		{"valid PID", "12345", 12345, false},
 		{"PID with whitespace", "  67890  ", 67890, false},
 		{"PID with newline", "9999\n", 9999, false},
-		{"multiple numbers", "123 456", 123, false},
+		{"multiple numbers", "123 456", 0, true},
 	}
 
 	for _, tt := range tests {
