@@ -50,9 +50,9 @@ func startServer(port int) int {
 
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Printf("Server error: %v", err)
-		return 1
+		return ExitResourceError
 	}
-	return 0
+	return ExitSuccess
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {

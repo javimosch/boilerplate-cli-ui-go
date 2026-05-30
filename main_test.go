@@ -99,13 +99,13 @@ func TestRunCommand_TableDriven(t *testing.T) {
 		{
 			name:     "no args",
 			args:     []string{},
-			wantExit: 1,
+			wantExit: 80, // ExitUserError
 			wantOut:  "Usage:",
 		},
 		{
 			name:     "unknown command",
 			args:     []string{"foobar"},
-			wantExit: 1,
+			wantExit: 80, // ExitUserError
 			wantOut:  "Usage:",
 			wantErr:  "Unknown command: foobar",
 		},
@@ -146,8 +146,8 @@ func TestHandleStart_InvalidFlag(t *testing.T) {
 		t.Fatal("expected exit with error for unknown flag, got nil")
 	}
 	if exitErr, ok := err.(*exec.ExitError); ok {
-		if exitErr.ExitCode() != 2 {
-			t.Fatalf("expected exit code 2, got %d", exitErr.ExitCode())
+		if exitErr.ExitCode() != 81 { // ExitUserInvalidFlag
+			t.Fatalf("expected exit code 81 (ExitUserInvalidFlag), got %d", exitErr.ExitCode())
 		}
 	} else {
 		t.Fatalf("unexpected error type: %v", err)

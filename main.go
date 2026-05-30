@@ -8,10 +8,20 @@ import (
 
 const Version = "1.0.0"
 
+// Agent-first design semantic exit codes
+const (
+	ExitSuccess         = 0  // Success
+	ExitUserError       = 80 // User errors (invalid arguments, missing required input)
+	ExitUserInvalidFlag = 81 // Invalid command line flags
+	ExitResourceError   = 90 // Resource errors (file access, network, etc.)
+	ExitIntegrationError = 100 // Integration errors (external service failures)
+	ExitSoftwareError   = 110 // Software errors (internal bugs, unexpected conditions)
+)
+
 func runCommand(args []string) int {
 	if len(args) < 1 {
 		printHelp()
-		return 1
+		return ExitUserError
 	}
 
 	command := args[0]
@@ -30,9 +40,9 @@ func runCommand(args []string) int {
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		printHelp()
-		return 1
+		return ExitUserError
 	}
-	return 0
+	return ExitSuccess
 }
 
 func main() {
@@ -45,7 +55,7 @@ func handleStart(args []string) int {
 	daemon := startCmd.Bool("daemon", false, "Run as daemon")
 	if err := startCmd.Parse(args); err != nil {
 		fmt.Fprintf(os.Stderr, "start: %v\n", err)
-		return 2
+		return ExitUserInvalidFlag
 	}
 
 	if *daemon {
