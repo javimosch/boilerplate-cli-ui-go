@@ -165,6 +165,10 @@ func TestReadPIDFile_TableDriven(t *testing.T) {
 		{"PID with whitespace", "  67890  ", 67890, false},
 		{"PID with newline", "9999\n", 9999, false},
 		{"multiple numbers", "123 456", 0, true},
+		{"non-numeric suffix", "123abc", 0, true},
+		{"leading zeros", "00123", 0, true},
+		{"large PID", "2147483647", 2147483647, false},
+		{"too large PID", "9223372036854775808", 0, true},
 	}
 
 	for _, tt := range tests {
