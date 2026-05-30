@@ -18,11 +18,11 @@ func runCommand(args []string) int {
 
 	switch command {
 	case "start":
-		handleStart(args[1:])
+		return handleStart(args[1:])
 	case "stop":
-		handleStop()
+		return handleStop()
 	case "status":
-		handleStatus()
+		return handleStatus()
 	case "version":
 		handleVersion()
 	case "help", "--help", "-h":
@@ -39,28 +39,28 @@ func main() {
 	os.Exit(runCommand(os.Args[1:]))
 }
 
-func handleStart(args []string) {
+func handleStart(args []string) int {
 	startCmd := flag.NewFlagSet("start", flag.ContinueOnError)
 	port := startCmd.Int("port", 8080, "Port for HTTP server")
 	daemon := startCmd.Bool("daemon", false, "Run as daemon")
 	if err := startCmd.Parse(args); err != nil {
 		fmt.Fprintf(os.Stderr, "start: %v\n", err)
-		os.Exit(2)
+		return 2
 	}
 
 	if *daemon {
-		startDaemon(*port)
+		return startDaemon(*port)
 	} else {
-		startServer(*port)
+		return startServer(*port)
 	}
 }
 
-func handleStop() {
-	stopDaemon()
+func handleStop() int {
+	return stopDaemon()
 }
 
-func handleStatus() {
-	checkDaemonStatus()
+func handleStatus() int {
+	return checkDaemonStatus()
 }
 
 func handleVersion() {

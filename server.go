@@ -24,7 +24,7 @@ type Status struct {
 
 var serverStatus Status
 
-func startServer(port int) {
+func startServer(port int) int {
 	mu.Lock()
 	serverStatus = Status{
 		Status:    "running",
@@ -49,8 +49,10 @@ func startServer(port int) {
 	log.Printf("Press Ctrl+C to stop")
 
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		log.Fatalf("Server error: %v", err)
+		log.Printf("Server error: %v", err)
+		return 1
 	}
+	return 0
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {

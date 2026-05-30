@@ -135,8 +135,8 @@ func TestRunCommand_TableDriven(t *testing.T) {
 // exits with code 2. Uses a subprocess so os.Exit does not kill the test process.
 func TestHandleStart_InvalidFlag(t *testing.T) {
 	if os.Getenv("TEST_SUBPROCESS") == "1" {
-		handleStart([]string{"-unknown-flag=yes"})
-		return
+		code := handleStart([]string{"-unknown-flag=yes"})
+		os.Exit(code)
 	}
 
 	cmd := exec.Command(os.Args[0], "-test.run=TestHandleStart_InvalidFlag")

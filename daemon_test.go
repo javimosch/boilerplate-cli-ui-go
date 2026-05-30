@@ -84,7 +84,7 @@ func TestIsDaemonRunningNegativePID(t *testing.T) {
 func TestCheckDaemonStatusNotRunning(t *testing.T) {
 	os.Remove(pidFile)
 
-	output := captureStdout(checkDaemonStatus)
+	output := captureStdout(func() { checkDaemonStatus() })
 	if !strings.Contains(output, "not running") {
 		t.Fatalf("checkDaemonStatus should report 'not running', got: %s", output)
 	}
@@ -93,7 +93,7 @@ func TestCheckDaemonStatusNotRunning(t *testing.T) {
 func TestStopDaemonNoPIDFile(t *testing.T) {
 	os.Remove(pidFile)
 
-	output := captureStdout(stopDaemon)
+	output := captureStdout(func() { stopDaemon() })
 	if !strings.Contains(output, "not running") {
 		t.Fatalf("stopDaemon should report 'not running', got: %s", output)
 	}
@@ -108,7 +108,7 @@ func TestStopDaemonStalePID(t *testing.T) {
 	}
 	defer os.Remove(pidFile)
 
-	output := captureStdout(stopDaemon)
+	output := captureStdout(func() { stopDaemon() })
 	if !strings.Contains(output, "Daemon stopped") {
 		t.Fatalf("stopDaemon should report 'Daemon stopped', got: %s", output)
 	}
