@@ -211,5 +211,8 @@ func handleStatusAPI(w http.ResponseWriter, r *http.Request) {
 
 func handleHealthAPI(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"status": "healthy"})
+	if err := json.NewEncoder(w).Encode(map[string]string{"status": "healthy"}); err != nil {
+		log.Printf("Error encoding health JSON: %v", err)
+		http.Error(w, `{"error":"internal error"}`, http.StatusInternalServerError)
+	}
 }
