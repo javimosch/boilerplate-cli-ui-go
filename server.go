@@ -206,7 +206,10 @@ func handleStatusAPI(w http.ResponseWriter, r *http.Request) {
 	serverStatus.Uptime = time.Since(serverStatus.StartTime).String()
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(serverStatus)
+	if err := json.NewEncoder(w).Encode(serverStatus); err != nil {
+		log.Printf("Error encoding status JSON: %v", err)
+		http.Error(w, `{"error":"internal error"}`, http.StatusInternalServerError)
+	}
 }
 
 func handleHealthAPI(w http.ResponseWriter, r *http.Request) {
