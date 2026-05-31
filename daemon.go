@@ -55,7 +55,9 @@ func startDaemon(port int) int {
 	pid := cmd.Process.Pid
 	if err := os.WriteFile(pidFile, []byte(fmt.Sprintf("%d", pid)), 0644); err != nil {
 		fmt.Fprintf(os.Stderr, "Error writing PID file: %v\n", err)
-		cmd.Process.Kill()
+		if err := cmd.Process.Kill(); err != nil {
+			fmt.Fprintf(os.Stderr, "Error killing daemon process after PID file failure: %v\n", err)
+		}
 		return ExitResourceError
 	}
 
@@ -131,7 +133,9 @@ func stopDaemon() int {
 		select {
 		case <-timeout:
 			if !forceKilled {
-				process.Signal(syscall.SIGKILL)
+				if err := process.Signal(syscall.SIGKILL); err != nil {
+					fmt.Fprintf(os.Stderr, "Warning: failed to force-kill daemon PID %d: %v\n", pid, err)
+				}
 				forceKilled = true
 			}
 		case <-forceTimeout:
