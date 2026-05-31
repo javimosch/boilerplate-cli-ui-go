@@ -71,6 +71,11 @@ func handleStart(args []string) int {
 		return ExitUserInvalidFlag
 	}
 
+	if *port < 1 || *port > 65535 {
+		fmt.Fprintf(os.Stderr, "start: invalid port %d, must be between 1 and 65535\n", *port)
+		return ExitUserInvalidFlag
+	}
+
 	if *daemon {
 		return startDaemon(*port)
 	} else {
