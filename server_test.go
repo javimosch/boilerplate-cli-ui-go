@@ -16,6 +16,7 @@ func TestHealthAPI(t *testing.T) {
 	handleHealthAPI(w, req)
 
 	resp := w.Result()
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("expected 200 OK, got %d", resp.StatusCode)
 	}
@@ -50,6 +51,7 @@ func TestStatusAPI(t *testing.T) {
 	handleStatusAPI(w, req)
 
 	resp := w.Result()
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("expected 200 OK, got %d", resp.StatusCode)
 	}
@@ -82,6 +84,7 @@ func TestHealthAPI_PostMethod(t *testing.T) {
 	handleHealthAPI(w, req)
 
 	resp := w.Result()
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("expected 200 OK for POST, got %d", resp.StatusCode)
 	}
@@ -107,8 +110,11 @@ func TestStatusAPI_JSONFields(t *testing.T) {
 	w := httptest.NewRecorder()
 	handleStatusAPI(w, httptest.NewRequest(http.MethodGet, "/api/status", nil))
 
+	resp := w.Result()
+	defer resp.Body.Close()
+
 	var raw map[string]interface{}
-	if err := json.NewDecoder(w.Result().Body).Decode(&raw); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&raw); err != nil {
 		t.Fatalf("failed to decode JSON: %v", err)
 	}
 
@@ -135,6 +141,7 @@ func TestHomePage(t *testing.T) {
 	handleHome(w, req)
 
 	resp := w.Result()
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("expected 200 OK, got %d", resp.StatusCode)
 	}
