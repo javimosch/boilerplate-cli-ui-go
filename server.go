@@ -196,7 +196,9 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 </body>
 </html>`
 	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
+	if _, err := w.Write([]byte(html)); err != nil {
+		log.Printf("Error writing home page response: %v", err)
+	}
 }
 
 func handleStatusAPI(w http.ResponseWriter, r *http.Request) {
