@@ -97,7 +97,9 @@ func stopDaemon() int {
 			return ExitSuccess
 		}
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		os.Remove(pidFile)
+		if err := os.Remove(pidFile); err != nil {
+			fmt.Fprintf(os.Stderr, "Warning: failed to remove PID file: %v\n", err)
+		}
 		return ExitResourceError
 	}
 
@@ -105,18 +107,24 @@ func stopDaemon() int {
 	process, err := os.FindProcess(pid)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error finding process: %v\n", err)
-		os.Remove(pidFile)
+		if err := os.Remove(pidFile); err != nil {
+			fmt.Fprintf(os.Stderr, "Warning: failed to remove PID file: %v\n", err)
+		}
 		return ExitSoftwareError
 	}
 
 	if err := process.Signal(syscall.SIGTERM); err != nil {
 		if errors.Is(err, os.ErrProcessDone) || errors.Is(err, syscall.ESRCH) {
-			os.Remove(pidFile)
+			if err := os.Remove(pidFile); err != nil {
+				fmt.Fprintf(os.Stderr, "Warning: failed to remove PID file: %v\n", err)
+			}
 			fmt.Printf("Daemon stopped (PID %d)\n", pid)
 			return ExitSuccess
 		}
 		fmt.Fprintf(os.Stderr, "Error stopping process: %v\n", err)
-		os.Remove(pidFile)
+		if err := os.Remove(pidFile); err != nil {
+			fmt.Fprintf(os.Stderr, "Warning: failed to remove PID file: %v\n", err)
+		}
 		return ExitIntegrationError
 	}
 
@@ -135,13 +143,17 @@ func stopDaemon() int {
 				forceKilled = true
 			}
 		case <-forceTimeout:
-			os.Remove(pidFile)
+			if err := os.Remove(pidFile); err != nil {
+				fmt.Fprintf(os.Stderr, "Warning: failed to remove PID file: %v\n", err)
+			}
 			fmt.Fprintf(os.Stderr, "Warning: daemon PID %d did not stop, removing PID file\n", pid)
 			return ExitIntegrationError
 		case <-ticker.C:
 			if err := process.Signal(syscall.Signal(0)); err != nil {
 				// Process has terminated
-				os.Remove(pidFile)
+				if err := os.Remove(pidFile); err != nil {
+					fmt.Fprintf(os.Stderr, "Warning: failed to remove PID file: %v\n", err)
+				}
 				fmt.Printf("Daemon stopped (PID %d)\n", pid)
 				return ExitSuccess
 			}
@@ -187,7 +199,9 @@ func isDaemonRunning() bool {
 	pid, err := readPIDFile(pidFile)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
-			os.Remove(pidFile)
+			if err := os.Remove(pidFile); err != nil {
+				fmt.Fprintf(os.Stderr, "Warning: failed to remove PID file: %v\n", err)
+			}
 		}
 		return false
 	}
@@ -201,7 +215,9 @@ func isDaemonRunning() bool {
 	// Send signal 0 to check if process exists
 	if err := process.Signal(syscall.Signal(0)); err != nil {
 		// Process not running, clean up PID file
-		os.Remove(pidFile)
+		if err := os.Remove(pidFile); err != nil {
+			fmt.Fprintf(os.Stderr, "Warning: failed to remove PID file: %v\n", err)
+		}
 		return false
 	}
 
