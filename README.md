@@ -9,6 +9,7 @@ This is a boilerplate for crafting UI-based applications packed as single binari
 - [boilerplate-cli-ui-go-v2-react](https://github.com/javimosch/boilerplate-cli-ui-go-v2-react) - Go + React 18
 - [boilerplate-cli-ui-node](https://github.com/javimosch/boilerplate-cli-ui-node) - Node.js
 - [boilerplate-cli-ui-python](https://github.com/javimosch/boilerplate-cli-ui-python) - Python + React
+- [boilerplate-cli-ui-rust](https://github.com/javimosch/boilerplate-cli-ui-rust) - Rust + Vanilla JS
 
 ## Philosophy
 
