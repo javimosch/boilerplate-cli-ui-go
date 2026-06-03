@@ -4,12 +4,15 @@
 
 This is a boilerplate for crafting UI-based applications packed as single binaries, designed to work as plugins for [SuperCLI](https://github.com/javimosch/supercli). It demonstrates how modern applications should be built: CLI-first with optional web interfaces, compiled to portable binaries.
 
-**v2 versions** (improved UI with sidebar, hashbang routing, Tailwind CSS):
-- [boilerplate-cli-ui-go-v2-vue](https://github.com/javimosch/boilerplate-cli-ui-go-v2-vue) - Go + Vue 3
-- [boilerplate-cli-ui-go-v2-react](https://github.com/javimosch/boilerplate-cli-ui-go-v2-react) - Go + React 18
-- [boilerplate-cli-ui-node](https://github.com/javimosch/boilerplate-cli-ui-node) - Node.js
-- [boilerplate-cli-ui-python](https://github.com/javimosch/boilerplate-cli-ui-python) - Python + React
-- [boilerplate-cli-ui-rust](https://github.com/javimosch/boilerplate-cli-ui-rust) - Rust + Vanilla JS
+| Stack | Repo | Binary |
+|-------|------|--------|
+| **Go + inline HTML** | **boilerplate-cli-ui-go** | **~5MB** |
+| Go + Vue 3 CDN | [boilerplate-cli-ui-go-v2-vue](https://github.com/javimosch/boilerplate-cli-ui-go-v2-vue) | ~5MB |
+| Go + React 18 CDN | [boilerplate-cli-ui-go-v2-react](https://github.com/javimosch/boilerplate-cli-ui-go-v2-react) | ~5MB |
+| Deno + vanilla JS | [boilerplate-cli-ui-deno](https://github.com/javimosch/boilerplate-cli-ui-deno) | ~76MB |
+| Node.js + vanilla JS | [boilerplate-cli-ui-node](https://github.com/javimosch/boilerplate-cli-ui-node) | ~123MB |
+| Python + React CDN | [boilerplate-cli-ui-python](https://github.com/javimosch/boilerplate-cli-ui-python) | ~10MB |
+| Rust + vanilla JS | [boilerplate-cli-ui-rust](https://github.com/javimosch/boilerplate-cli-ui-rust) | ~1.1MB |
 
 ## Philosophy
 
