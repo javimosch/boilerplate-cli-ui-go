@@ -4,7 +4,7 @@
 This is a boilerplate for crafting UI-based applications packed as single binaries, designed to work as plugins for [SuperCLI](https://github.com/javimosch/supercli). It demonstrates how modern applications should be built: CLI-first with optional web interfaces, compiled to portable binaries.
 | Stack | Repo | Binary | SDK Size |
 |-------|------|--------|----------|
-| **Go + inline HTML** | **boilerplate-cli-ui-go** | **~5MB** | ~150MB |
+| **Go + inline HTML** | **boilerplate-cli-ui-go** | **~5MB** | **~150MB** |
 | Go + Vue 3 CDN | [boilerplate-cli-ui-go-v2-vue](https://github.com/javimosch/boilerplate-cli-ui-go-v2-vue) | ~5MB | ~150MB |
 | Go + React 18 CDN | [boilerplate-cli-ui-go-v2-react](https://github.com/javimosch/boilerplate-cli-ui-go-v2-react) | ~5MB | ~150MB |
 | Deno + vanilla JS | [boilerplate-cli-ui-deno](https://github.com/javimosch/boilerplate-cli-ui-deno) | ~76MB | ~100MB |
@@ -16,9 +16,9 @@ This is a boilerplate for crafting UI-based applications packed as single binari
 | Nim + Vue 3 | [boilerplate-cli-ui-nim](https://github.com/javimosch/boilerplate-cli-ui-nim) | ~364KB | ~50MB |
 | Zig + Vue 3 | [boilerplate-cli-ui-zig](https://github.com/javimosch/boilerplate-cli-ui-zig) | ~190KB | ~50MB |
 | Dart + Vue 3 | [boilerplate-cli-ui-dart](https://github.com/javimosch/boilerplate-cli-ui-dart) | ~6.4MB | ~400MB |
+| V + Vue 3 | [boilerplate-cli-ui-v](https://github.com/javimosch/boilerplate-cli-ui-v) | ~1.2MB | ~5MB |
+| Crystal + Vue 3 | [boilerplate-cli-ui-crystal](https://github.com/javimosch/boilerplate-cli-ui-crystal) | ~3.1MB | ~50MB |
 | machin + React 18 CDN | [boilerplate-cli-ui-machin](https://github.com/javimosch/boilerplate-cli-ui-machin) | ~27KB | ~2MB |
-|| V + Vue 3 | [boilerplate-cli-ui-v](https://github.com/javimosch/boilerplate-cli-ui-v) | ~1.2MB | ~5MB |
-|| Crystal + Vue 3 | [boilerplate-cli-ui-crystal](https://github.com/javimosch/boilerplate-cli-ui-crystal) | ~3.1MB | ~50MB |
 ## Philosophy
 **CLI-Native, Web-Enabled**
 Modern applications should be CLI-native by default, with web interfaces as an enhancement rather than a requirement. This approach provides:
