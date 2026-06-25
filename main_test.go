@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -11,14 +12,19 @@ import (
 )
 
 func captureStdout(f func()) string {
-	r, w, _ := os.Pipe()
+	r, w, err := os.Pipe()
+	if err != nil {
+		panic(fmt.Sprintf("captureStdout: os.Pipe() failed: %v", err))
+	}
 	old := os.Stdout
 	os.Stdout = w
 
 	out := make(chan string)
 	go func() {
 		var buf bytes.Buffer
-		io.Copy(&buf, r)
+		if _, err := io.Copy(&buf, r); err != nil {
+			panic(fmt.Sprintf("captureStdout: io.Copy failed: %v", err))
+		}
 		out <- buf.String()
 	}()
 
@@ -30,14 +36,19 @@ func captureStdout(f func()) string {
 }
 
 func captureStderr(f func()) string {
-	r, w, _ := os.Pipe()
+	r, w, err := os.Pipe()
+	if err != nil {
+		panic(fmt.Sprintf("captureStderr: os.Pipe() failed: %v", err))
+	}
 	old := os.Stderr
 	os.Stderr = w
 
 	out := make(chan string)
 	go func() {
 		var buf bytes.Buffer
-		io.Copy(&buf, r)
+		if _, err := io.Copy(&buf, r); err != nil {
+			panic(fmt.Sprintf("captureStderr: io.Copy failed: %v", err))
+		}
 		out <- buf.String()
 	}()
 
