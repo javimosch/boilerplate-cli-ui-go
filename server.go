@@ -206,10 +206,14 @@ func handleStatusAPI(w http.ResponseWriter, r *http.Request) {
 	serverStatus.Uptime = time.Since(serverStatus.StartTime).String()
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(serverStatus)
+	if err := json.NewEncoder(w).Encode(serverStatus); err != nil {
+		log.Printf("Error encoding status JSON: %v", err)
+	}
 }
 
 func handleHealthAPI(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"status": "healthy"})
+	if err := json.NewEncoder(w).Encode(map[string]string{"status": "healthy"}); err != nil {
+		log.Printf("Error encoding health JSON: %v", err)
+	}
 }
